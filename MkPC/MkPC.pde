@@ -9,7 +9,7 @@
 import beads.*;
 
 AudioContext ac;
-SamplePlayer player;
+SamplePlayer player1, player2;
 
 color fore = color(255, 102, 204);
 color back = color(0,0,0);
@@ -17,23 +17,37 @@ color back = color(0,0,0);
 void setup() {
   size(800, 600);
   ac = new AudioContext();
-  String audioFile = selectInput();
-  player = new SamplePlayer(ac, SampleManager.sample(audioFile));
-  player.setKillOnEnd(false);
+  String audioFile1 = selectInput("this will play with 'space'...");
+  player1 = new SamplePlayer(ac, SampleManager.sample(audioFile1));
+  player1.setKillOnEnd(false);
   
-  Gain g = new Gain(ac, 2, 0.2);
-  g.addInput(player);
-  ac.out.addInput(g);
+  Gain g1 = new Gain(ac, 2, 0.4);
+  g1.addInput(player1);
+  ac.out.addInput(g1);
+  
+  String audioFile2 = selectInput("this will play with 'a'...");
+  player2 = new SamplePlayer(ac, SampleManager.sample(audioFile2));
+  player2.setKillOnEnd(false);
+  
+  Gain g2 = new Gain(ac, 2, 0.4);
+  g2.addInput(player2);
+  ac.out.addInput(g2);
+  
   ac.start();
 }
 
 
-void mouseClicked(){
+void keyPressed(){
   /*color temp = fore;
   fore = back;
   back = temp;*/
   //player.reset();
-  player.reTrigger();
+  if (key==' '){
+    player1.reTrigger();
+  }
+  else if(key=='a'){
+    player2.reTrigger();
+  }
 }
 
 void draw() {
