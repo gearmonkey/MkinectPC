@@ -5,32 +5,49 @@
  * Sometimes, it can be tickled off the screen.
  */
 
-float x, y; // X and Y coordinates of text
-float hr, vr;  // horizontal and vertical radius of the text
-int per_side, box_width, box_height;
+
+import beads.*;
+
+AudioContext ac;
+SamplePlayer player;
+
+color fore = color(255, 102, 204);
+color back = color(0,0,0);
 
 void setup() {
   size(800, 600);
-  per_side = 8;
-  box_width = per_side + 2 / width;
-  box_height = per_side + 2 / height;
-  fill(204, 102, 0);
-  for (int i=0 ; i < per_side ; i++ ){
-    rect(box_height*i +1, 0, box_height, box_width);
-    
-  }
+  ac = new AudioContext();
+  String audioFile = selectInput();
+  player = new SamplePlayer(ac, SampleManager.sample(audioFile));
+  player.setKillOnEnd(false);
   
-  noStroke();
-  x = width / 2;
-  y = height / 2;
+  Gain g = new Gain(ac, 2, 0.2);
+  g.addInput(player);
+  ac.out.addInput(g);
+  ac.start();
+}
+
+
+void mouseClicked(){
+  /*color temp = fore;
+  fore = back;
+  back = temp;*/
+  //player.reset();
+  player.reTrigger();
 }
 
 void draw() {
-  // instead of clearing the background, fade it by drawing
-  // a semi-transparent rectangle on top
-  fill(204, 102, 0);
-  for (int i=0 ; i < per_side ; i++ ){
-    rect(box_height*i +1, 0, box_height, box_width);
-    
+  loadPixels();
+  //set the background
+  Arrays.fill(pixels, back);
+  //scan across the pixels
+  for(int i = 0; i < width; i++) {
+    //for each pixel work out where in the current audio buffer we are
+    int buffIndex = i * ac.getBufferSize() / width;
+    //then work out the pixel height of the audio data at that point
+    int vOffset = (int)((1 + ac.out.getValue(0, buffIndex)) * height / 2);
+    //draw into Processing's convenient 1-D array of pixels
+    pixels[vOffset * height + i] = fore;
   }
+  updatePixels();
 }
