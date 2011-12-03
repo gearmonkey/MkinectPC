@@ -19,9 +19,11 @@ AudioContext ac;
 SamplePlayer player1, player2;
 
 SimpleOpenNI  context;
+MoveDetect md, md1, md2, md3;
 
 color fore = color(255, 102, 204);
 color back = color(0,0,0);
+boolean drawMovement = true;
 
 public void launchpadGridPressed(int x, int y) {
   println("GridButton pressed at: " + x + ", " + y);
@@ -50,6 +52,7 @@ void setup() {
   launchpad.changeGrid(1, 0, LColor.RED_HIGH);
   
   context = new SimpleOpenNI(this);
+  md = new MoveDetect();
    
   // enable depthMap generation 
   context.enableDepth();
@@ -91,11 +94,14 @@ void keyPressed(){
   fore = back;
   back = temp;*/
   //player.reset();
-  if (key==' '){
+  switch (key){
+    case ' ':{
     player1.reTrigger();
-  }
-  else if(key=='a'){
+    break;
+    }case 'a':{
     player2.reTrigger();
+    break;
+    }
   }
 }
 
@@ -124,6 +130,28 @@ void draw() {
     pixels[vOffset * height + i] = fore;
   }
   updatePixels();
+  
+  
+  // calculate new joint movement function sample
+  md.jointMovementFunction(1, SimpleOpenNI.SKEL_LEFT_HAND);
+  
+  if (drawMovement)
+  {  // plot the movement function
+    md.plotMovementFunction();
+  }
+  if (md.swipeStart == 1)
+  {
+    player1.reTrigger();
+    println("ONSET START:::::" + millis());
+  }
+  else if (md.onsetState == 1)
+  {
+    println("Hand Jerked!");
+  }
+  else if (md.swipeEnd == 1)
+  {       
+     println("ONSET END:::::" + millis());
+  }
 }
 
 
@@ -136,6 +164,8 @@ void drawSkeleton(int userId)
   context.getJointPositionSkeleton(userId,SimpleOpenNI.SKEL_NECK,jointPos);
   println(jointPos);
   */
+  stroke(2);
+  strokeWeight(2);
   
   context.drawLimb(userId, SimpleOpenNI.SKEL_HEAD, SimpleOpenNI.SKEL_NECK);
 
