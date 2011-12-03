@@ -8,14 +8,41 @@
 
 import beads.*;
 
+//launchpad bits
+import themidibus.*;
+import com.rngtng.launchpad.*;
+Launchpad launchpad;
+
 AudioContext ac;
 SamplePlayer player1, player2;
 
 color fore = color(255, 102, 204);
 color back = color(0,0,0);
 
+public void launchpadGridPressed(int x, int y) {
+  println("GridButton pressed at: " + x + ", " + y);
+  launchpad.changeGrid(x, y, LColor.YELLOW_HIGH);
+  if (x==0  && y==0){
+    player1.reTrigger();
+  }else if (x==1 && y==0){
+    player2.reTrigger();
+  }
+}
+
+public void launchpadGridReleased(int x, int y) {
+  println("GridButton released at: " + x + ", " + y);
+  if ((x==0 || x==1) && (y==0)){
+    launchpad.changeGrid(x, y, LColor.RED_HIGH);
+  }else{
+    launchpad.changeGrid(x, y, LColor.OFF);
+  }
+}
+
 void setup() {
   size(800, 600);
+  launchpad = new Launchpad(this);
+  launchpad.changeGrid(0, 0, LColor.RED_HIGH);
+  launchpad.changeGrid(1, 0, LColor.RED_HIGH);
   ac = new AudioContext();
   String audioFile1 = selectInput("this will play with 'space'...");
   player1 = new SamplePlayer(ac, SampleManager.sample(audioFile1));
