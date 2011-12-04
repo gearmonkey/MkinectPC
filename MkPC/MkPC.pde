@@ -16,14 +16,16 @@ import com.rngtng.launchpad.*;
 Launchpad launchpad;
 
 AudioContext ac;
-SamplePlayer player1, player2;
+SamplePlayer player1, player2, player3, player4, player5;
+Static start1, end1, start2, end2;
 
 SimpleOpenNI  context;
-MoveDetect md, md1, md2, md3;
+MoveDetect md, md1;//, md2, md3, md4;
 
 color fore = color(255, 102, 204);
 color back = color(0,0,0);
 boolean drawMovement = true;
+int audioBuffer = 1000;
 
 public void launchpadGridPressed(int x, int y) {
   println("GridButton pressed at: " + x + ", " + y);
@@ -53,12 +55,17 @@ void setup() {
   
   context = new SimpleOpenNI(this);
   md = new MoveDetect();
-   
+  md1 = new MoveDetect();
+//  md2 = new MoveDetect();
+//  md3 = new MoveDetect();
+//  md4 = new MoveDetect();
+  
   // enable depthMap generation 
   context.enableDepth();
   
   // enable skeleton generation for all joints
   context.enableUser(SimpleOpenNI.SKEL_PROFILE_ALL);
+ 
  
   background(200,0,0);
 
@@ -69,21 +76,59 @@ void setup() {
   size(context.depthWidth(), context.depthHeight());
   
   ac = new AudioContext();
-  String audioFile1 = selectInput("this will play with 'space'...");
+//  String audioFile1 = selectInput("this will play with 'space'...");
+  String audioFile1 = "/Users/bfields/Documents/Processing/MkPC/data/25649__walter-odington__subby-kick.wav";
+  SampleManager.setBufferingRegime(Sample.Regime.newStreamingRegime(audioBuffer));
   player1 = new SamplePlayer(ac, SampleManager.sample(audioFile1));
   player1.setKillOnEnd(false);
+//  start1 = new Static(ac,70000);
+//  end1 = new Static(ac,75000);
+//  player1.setLoopType(SamplePlayer.LoopType.NO_LOOP_FORWARDS);
+//  player1.setLoopStart(start1);
+//  player1.setLoopEnd(end1);
   
-  Gain g1 = new Gain(ac, 2, 0.4);
+  Gain g1 = new Gain(ac, 2, 0.7);
   g1.addInput(player1);
   ac.out.addInput(g1);
   
-  String audioFile2 = selectInput("this will play with 'a'...");
+//  String audioFile2 = selectInput("this will play with 'a'...");
+  String audioFile2 = "/Users/bfields/Documents/Processing/MkPC/data/439__tictacshutup__prac-snare-2.wav";
   player2 = new SamplePlayer(ac, SampleManager.sample(audioFile2));
   player2.setKillOnEnd(false);
+//  start2 = new Static(ac,80000);
+//  end2 = new Static(ac,85000);
+//  player1.setLoopType(SamplePlayer.LoopType.NO_LOOP_FORWARDS);
+//  player2.setLoopStart(start2);
+//  player2.setLoopEnd(end2);
   
-  Gain g2 = new Gain(ac, 2, 0.4);
+  
+  Gain g2 = new Gain(ac, 2, 0.7);
   g2.addInput(player2);
   ac.out.addInput(g2);
+  
+//  String audioFile3 = selectInput("this will play with 's'...");
+//  player3 = new SamplePlayer(ac, SampleManager.sample(audioFile3));
+//  player3.setKillOnEnd(false);
+//  
+//  Gain g3 = new Gain(ac, 2, 0.7);
+//  g3.addInput(player3);
+//  ac.out.addInput(g3);
+//  
+//  String audioFile4 = selectInput("this will play with 'd'...");
+//  player4 = new SamplePlayer(ac, SampleManager.sample(audioFile4));
+//  player4.setKillOnEnd(false);
+//  
+//  Gain g4 = new Gain(ac, 2, 0.7);
+//  g4.addInput(player4);
+//  ac.out.addInput(g4);
+//  
+//  String audioFile5 = selectInput("this will play with 'f'...");
+//  player5 = new SamplePlayer(ac, SampleManager.sample(audioFile5));
+//  player5.setKillOnEnd(false);
+//  
+//  Gain g5 = new Gain(ac, 2, 0.9);
+//  g5.addInput(player5);
+//  ac.out.addInput(g5);
   
   ac.start();
 }
@@ -96,12 +141,25 @@ void keyPressed(){
   //player.reset();
   switch (key){
     case ' ':{
-    player1.reTrigger();
+    player1.setLoopStart(player1.getLoopStartUGen());
+    player1.setLoopEnd(player1.getLoopEndUGen());
+    player2.setLoopStart(player2.getLoopStartUGen());
+    player2.setLoopEnd(player2.getLoopEndUGen());
     break;
     }case 'a':{
+    player1.reTrigger();
+    break;
+    }case 's':{
     player2.reTrigger();
     break;
     }
+//    }case 'd':{
+//    player4.reTrigger();
+//    break;
+//    }case 'f':{
+//    player5.reTrigger();
+//    break;
+//    }
   }
 }
 
@@ -131,27 +189,12 @@ void draw() {
   }
   updatePixels();
   
-  
-  // calculate new joint movement function sample
-  md.jointMovementFunction(1, SimpleOpenNI.SKEL_LEFT_HAND);
-  
-  if (drawMovement)
-  {  // plot the movement function
-    md.plotMovementFunction();
-  }
-  if (md.swipeStart == 1)
-  {
-    player1.reTrigger();
-    println("ONSET START:::::" + millis());
-  }
-  else if (md.onsetState == 1)
-  {
-    println("Hand Jerked!");
-  }
-  else if (md.swipeEnd == 1)
-  {       
-     println("ONSET END:::::" + millis());
-  }
+  checkMovement(md, SimpleOpenNI.SKEL_LEFT_HAND, color(255,255,255), player1);
+  checkMovement(md1, SimpleOpenNI.SKEL_RIGHT_HAND, color(120,120,255), player2);
+//  checkMovement(md2, SimpleOpenNI.SKEL_LEFT_FOOT, color(120,255,255), player3);
+//  checkMovement(md3, SimpleOpenNI.SKEL_RIGHT_FOOT, color(120,255,120), player4);
+//  checkMovement(md4, SimpleOpenNI.SKEL_RIGHT_HIP, color(255,120,120), player5);
+
 }
 
 
@@ -187,6 +230,31 @@ void drawSkeleton(int userId)
   context.drawLimb(userId, SimpleOpenNI.SKEL_TORSO, SimpleOpenNI.SKEL_RIGHT_HIP);
   context.drawLimb(userId, SimpleOpenNI.SKEL_RIGHT_HIP, SimpleOpenNI.SKEL_RIGHT_KNEE);
   context.drawLimb(userId, SimpleOpenNI.SKEL_RIGHT_KNEE, SimpleOpenNI.SKEL_RIGHT_FOOT);  
+}
+
+
+void checkMovement(MoveDetect detector, int joint, color mvColor, SamplePlayer player)
+{
+    // calculate new joint movement function sample
+  detector.jointMovementFunction(1, joint);
+  
+  if (drawMovement)
+  {  // plot the movement function
+    detector.plotMovementFunction(mvColor);
+  }
+  if (detector.swipeStart == 1)
+  {
+    player.reTrigger();
+    println("ONSET START:::::" + millis());
+  }
+  else if (detector.onsetState == 1)
+  {
+    println("Hand Jerked!");
+  }
+  else if (detector.swipeEnd == 1)
+  {       
+     println("ONSET END:::::" + millis());
+  }
 }
 
 // -----------------------------------------------------------------
